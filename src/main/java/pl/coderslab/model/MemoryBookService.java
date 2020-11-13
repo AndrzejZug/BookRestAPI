@@ -9,23 +9,36 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class MemoryBookService {
+public class MemoryBookService implements BookService {
 
-    private List<Book> list;
+    private List<Book> books;
     private static Long nextId = 4L;
 //    private final Logger logger = LoggerFactory.getLogger(SampleLoggerController.class);
 
+    public void setBooks(List<Book> books) {
+        this.books = books;
+    }
+
+    public static Long getNextId() {
+        return nextId;
+    }
+
+    public static void setNextId(Long nextId) {
+        MemoryBookService.nextId = nextId;
+    }
+
     public MemoryBookService() {
-        list = new ArrayList<>();
-        list.add(new Book(1L, "9788324631766", "Thiniking	in	Java", "Bruce	Eckel", "Helion", "programming"));
-        list.add(new Book(2L, "9788324627738", "Rusz	glowa	Java.", "Sierra	Kathy,	Bates	Bert", "Helion",
+        books = new ArrayList<>();
+        books.add(new Book(1L, "9788324631766", "Thiniking	in	Java", "Bruce	Eckel", "Helion", "programming"));
+        books.add(new Book(2L, "9788324627738", "Rusz	glowa	Java.", "Sierra	Kathy,	Bates	Bert", "Helion",
                 "programming"));
-        list.add(new Book(3L, "9780130819338", "Java	2.	Podstawy", "Cay	Horstmann,	Gary	Cornell", "Helion",
+        books.add(new Book(3L, "9780130819338", "Java	2.	Podstawy", "Cay	Horstmann,	Gary	Cornell", "Helion",
                 "programming"));
     }
 
     public Optional<Book> getBookById(Long id) {
-        return list.stream().filter(book -> book.getId().equals(id)).findFirst();
+        return books.stream().filter(book -> book.getId().equals(id)).findFirst();
+
     }
 //        for (Book book : getAllBooks()) {
 //            if (book.getId().equals(Id)) return book;
@@ -36,16 +49,34 @@ public class MemoryBookService {
 
 
 
-    public List<Book> getAllBooks() {
-        return list;
+    public List<Book> getBooks() {
+        return books;
     }
+
+    @Override
+    public void add(Book book) {
+            book.setId(nextId++);
+            books.add(book);
+        }
 
     public Book EditBookById() {
         return null;
     }
 
-    public Book DeleteBookById() {
-        return null;
+    @Override
+    public void delete(Long id) {
+        if (getBookById(id).isPresent()) {
+            books.remove(this.getBookById(id).get());
+        }
     }
+
+    @Override
+    public void update(Book book) {
+        if (this.getBookById(book.getId()).isPresent()) {
+            int indexOf = books.indexOf(this.getBookById(book.getId()).get());
+            books.set(indexOf, book);
+        }
+    }
+
 
 }

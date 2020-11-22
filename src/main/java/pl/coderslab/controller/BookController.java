@@ -1,61 +1,79 @@
 package pl.coderslab.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import pl.coderslab.model.Book;
-import pl.coderslab.model.MemoryBookService;
+import pl.coderslab.model.BookService;
 
+import java.io.PrintWriter;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/books")
-
 public class BookController {
-    private MemoryBookService memoryBookService;
 
-    @Autowired
-    public BookController(MemoryBookService memoryBookService) {
-        this.memoryBookService = memoryBookService;
+//    private MemoryBookService memoryBookService;
+//    @Autowired
+//    public BookController(MemoryBookService memoryBookService) {
+//        this.memoryBookService = memoryBookService;
+//    }
+    private BookService bookService;
+
+    public BookController(@Qualifier("jpaBookService") BookService bookService) {
+        this.bookService = bookService;
     }
+
 
     @RequestMapping("/helloBook")
     public Book helloBook() {
         Book book = new Book(1L, "9788324631766", "Thinking in Java",
                 "Bruce Eckel", "Helion", "programming");
+        String strDateString = "2019-07-04";
+        LocalDate localDate = LocalDate.parse(strDateString);
+        System.out.println(localDate);
+//        PrintWriter pw = new PrintWriter();
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy MM dd");
+        LocalDate date = LocalDate.parse("2019 09 20", formatter);
         return book;
     }
 
-    @RequestMapping("")
-    public List<Book> getList() {
-        return memoryBookService.getBooks();
+//    @RequestMapping("")
+//    public List<Book> getList() {
+//        return memoryBookService.getBooks();
+//    }
+    @GetMapping("")
+    public @ResponseBody
+    List<Book> getList() {
+        return bookService.getBooks();
     }
     @PostMapping("")
-    public void addBook(@RequestBody Book book2) {
-        memoryBookService.add(book2);
+    public void addBook(@RequestBody Book book) {
+        bookService.add(book);
     }
 
 
-    @RequestMapping(value = "/{id}")
+//    @RequestMapping(value = "/{id}")
+    @GetMapping("/{id}")
     public Book getBookById(@PathVariable Long id) {
-        return memoryBookService.getBookById(id).orElseThrow(() -> {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "entity not found");
+        return this.bookService.get(id).orElseThrow(() -> {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Book of specified ID not found");
         });
     }
 
     @DeleteMapping("/{id}")
     public void removeBook(@PathVariable Long id) {
-        memoryBookService.delete(id);
+        bookService.delete(id);
     }
 
     @PutMapping("")
     @ResponseBody
     public void updateBook(@RequestBody Book book) {
-        memoryBookService.update(book);
+        bookService.update(book);
     }
 
 
